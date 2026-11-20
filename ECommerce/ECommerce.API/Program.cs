@@ -1,23 +1,35 @@
+using System.Diagnostics;
+using ECommerce.API.Middlewares;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+//HttpContext nesnesinin oluştuğu yer burasıdır. Nesne içinde yer almasını istediğiniz servisler 
+// ve middleware'ler builder üzerinde tanımlanmalıdır.
+//Yani alet çantasını hazırladığınız yer burasıdır.
 
 var app = builder.Build();
+//bu satırla birlikte çantanın fermuarını kapatmış oluyorsunuz.
+//build dediğinizde tüm httpContext nesnesi içinde olması gereken servisler ve middleware'ler hazırlanır.
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+//Request Pipeline:
+// app.Use(async(context, next) =>
+// {
+//    app.Logger.LogInformation("İstek geliyor....");      
+//    await next(context);
+//    app.Logger.LogInformation("Gelen istek: {Method} {Path} -> Dönen yanıt: {StatusCode}",context.Request.Method, context.Request.Path, context.Response.StatusCode); 
+// });
 
-app.UseHttpsRedirection();
+// app.Use(async(context,next) =>
+// {
+//     var stopWatch = Stopwatch.StartNew();
+//     await next();
+//     stopWatch.Stop();
+//     app.Logger.LogInformation("Yanıt için geçen süre: {Time} ms",stopWatch.ElapsedMilliseconds.ToString());
+// });
+app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<RequestTimingMiddleware>();
 
-app.UseAuthorization();
-
-app.MapControllers();
+app.MapGet("/ping", () => Results.Ok(new {durum="Uygulama ayakta!"}));
 
 app.Run();
+
