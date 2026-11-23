@@ -13,9 +13,12 @@ public class RequestLoggingMiddleware
 
     public async Task InvokeAsync(HttpContext context, ILogger<RequestLoggingMiddleware> logger)
     {
-        logger.LogInformation("İstek geliyor....");
+        logger.LogInformation("1. İstek geliyor....");    
+
         await _next(context);
-        logger.LogInformation("Gelen istek: {Method} {Path} -> Dönen yanıt: {StatusCode}", context.Request.Method, context.Request.Path, context.Response.StatusCode);
+        logger.LogInformation("5. Gelen istek: {Method} {Path} -> Dönen yanıt: {StatusCode}", context.Request.Method, context.Request.Path, context.Response.StatusCode);
     }
+
+
 
 }

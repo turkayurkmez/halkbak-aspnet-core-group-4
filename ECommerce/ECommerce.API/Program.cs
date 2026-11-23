@@ -3,6 +3,7 @@ using ECommerce.API.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers();
 //HttpContext nesnesinin oluştuğu yer burasıdır. Nesne içinde yer almasını istediğiniz servisler 
 // ve middleware'ler builder üzerinde tanımlanmalıdır.
 //Yani alet çantasını hazırladığınız yer burasıdır.
@@ -26,10 +27,17 @@ var app = builder.Build();
 //     stopWatch.Stop();
 //     app.Logger.LogInformation("Yanıt için geçen süre: {Time} ms",stopWatch.ElapsedMilliseconds.ToString());
 // });
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<RequestTimingMiddleware>();
 
-app.MapGet("/ping", () => Results.Ok(new {durum="Uygulama ayakta!"}));
+
+
+app.MapGet("/ping", () => Results.Ok(new {durum="3. Aşama: Uygulama ayakta!"}));
+app.MapGet("/hata", () => { throw new InvalidOperationException();});
+
+app.MapControllers();
 
 app.Run();
 

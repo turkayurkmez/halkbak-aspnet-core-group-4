@@ -23,11 +23,11 @@ public class RequestTimingMiddleware
     public async Task InvokeAsync(HttpContext context, ILogger<RequestTimingMiddleware> logger)
     {
         var stopWatch = Stopwatch.StartNew();
-        logger.LogInformation("Kronoemetre başladı!");
+        logger.LogInformation("2. Kronoemetre başladı!");
 
         await _next(context);
         stopWatch.Stop();
-        logger.LogInformation("Yanıt için geçen süre: {Time} ms", stopWatch.ElapsedMilliseconds.ToString());
+        logger.LogInformation("4. Yanıt için geçen süre: {Time} ms", stopWatch.ElapsedMilliseconds.ToString());
     }
 
 

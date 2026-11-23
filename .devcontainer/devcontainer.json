@@ -1,0 +1,41 @@
+{
+  "name": "ECommerce (.NET 10)",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:1-10.0-noble",
+
+  "features": {
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+
+  // Kod host'ta kalır, container'a bind mount edilir (varsayılan davranış).
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  // Claude Code oturum/ayarları için named volume (host'taki ~/.claude mount edilmez).
+  "mounts": [
+    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
+  ],
+
+  // Named volume root sahipliğinde oluşabilir; vscode kullanıcısına devret.
+  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.claude && dotnet restore ECommerce/ECommerce.slnx",
+
+  // launchSettings.json: http -> 5000, https -> 7255 / 5031
+  "forwardPorts": [5000, 5031, 7255],
+  "portsAttributes": {
+    "5000": { "label": "API (http)" },
+    "5031": { "label": "API (http, https profili)" },
+    "7255": { "label": "API (https)", "protocol": "https" }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "humao.rest-client"
+      ],
+      "settings": {
+        "dotnet.defaultSolution": "ECommerce/ECommerce.slnx"
+      }
+    }
+  }
+}
