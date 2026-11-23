@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using ECommerce.API.Middlewares;
+using ECommerce.API.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,8 @@ builder.Services.AddControllers();
 //HttpContext nesnesinin oluştuğu yer burasıdır. Nesne içinde yer almasını istediğiniz servisler 
 // ve middleware'ler builder üzerinde tanımlanmalıdır.
 //Yani alet çantasını hazırladığınız yer burasıdır.
+
+builder.Services.Configure<ShopOptions>(builder.Configuration.GetSection(ShopOptions.SectionName));
 
 var app = builder.Build();
 //bu satırla birlikte çantanın fermuarını kapatmış oluyorsunuz.
@@ -32,7 +35,8 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<RequestTimingMiddleware>();
 
-
+var currency = app.Configuration["Shop:Currency"];
+app.Logger.LogWarning("DİKKAT!!! Currencu değeri: {currency}",currency);
 
 app.MapGet("/ping", () => Results.Ok(new {durum="3. Aşama: Uygulama ayakta!"}));
 app.MapGet("/hata", () => { throw new InvalidOperationException();});
