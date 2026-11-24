@@ -26,7 +26,7 @@ namespace ECommerce.API.Controllers
         [HttpGet("info")]
         public IActionResult GetInfo()
         {
-        
+                    
             return Ok(shopOptions);
         }
     }
