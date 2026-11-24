@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using ECommerce.API.Middlewares;
 using ECommerce.API.Options;
+using ECommerce.Application;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,10 +10,15 @@ builder.Services.AddControllers();
 //HttpContext nesnesinin oluştuğu yer burasıdır. Nesne içinde yer almasını istediğiniz servisler 
 // ve middleware'ler builder üzerinde tanımlanmalıdır.
 //Yani alet çantasını hazırladığınız yer burasıdır.
+builder.Services.AddOpenApi();
 
 builder.Services.Configure<ShopOptions>(builder.Configuration.GetSection(ShopOptions.SectionName));
 
+builder.Services.AddScoped<ProductService>();
+
 var app = builder.Build();
+
+
 //bu satırla birlikte çantanın fermuarını kapatmış oluyorsunuz.
 //build dediğinizde tüm httpContext nesnesi içinde olması gereken servisler ve middleware'ler hazırlanır.
 
@@ -42,6 +49,12 @@ app.MapGet("/ping", () => Results.Ok(new {durum="3. Aşama: Uygulama ayakta!"}))
 app.MapGet("/hata", () => { throw new InvalidOperationException();});
 
 app.MapControllers();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
 
 app.Run();
 
