@@ -20,6 +20,7 @@ namespace ECommerce.API.Controllers
         [HttpGet]
         public IActionResult Get()
         {
+            
             return Ok(new {message ="Burada ürünler dönecek"});
         }
 
