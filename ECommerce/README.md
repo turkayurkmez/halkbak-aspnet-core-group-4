@@ -4,12 +4,21 @@ Bu repo, ASP.NET Core Web API konularını uygulamalı olarak öğrenmek için k
 
 ## Günlük Ders Notları
 
+### 24 Kasım 2026
+
+- **Katmanlı yapı:** `ECommerce.Application` ve `ECommerce.Domain` projeleri eklendi. API, Application'a; Application da Domain'e referans verir. Domain'deki `Product` ürünün kimlik, ad, SKU, fiyat, stok ve kategori kimliği alanlarını; `Category` ise kimlik ve ad alanlarını içerir.
+- **Ürün servisi ve bağımlılık enjeksiyonu:** `ProductService`, `AddScoped` ile kaydedilir ve `ProductsController` tarafından kullanılır. Servis, başlangıçta üç ürün içeren örnek bir bellek içi liste üzerinden ürünleri listeler, kimliğe göre arar ve yeni ürün ekler.
+- **Ürün endpoint'leri:** `GET /api/products` ürünleri listeler; `GET /api/products/{id}` kimliğe göre arar; `POST /api/products/add` istek gövdesindeki ürünü ekler ve `CreatedAtAction` ile ürünün adresini içeren yanıt döndürür. `GET /api/products/info` mağaza ayarlarını döndürmeye devam eder.
+- **Örneğin sınırları:** Ürün listesi veritabanına kaydedilmez. Servis her HTTP isteği için ayrı oluşturulduğundan eklenen ürünler sonraki isteklerde korunmaz. Yeni ürünün kimliği servis tarafından üretilmez; bulunamayan ürün için ayrıca `NotFound` yanıtı tanımlanmamıştır.
+- **OpenAPI ve Scalar:** Development ortamında OpenAPI ve Scalar etkinleştirilir. `http` profili tarayıcıyı `/scalar` adresinde açacak şekilde ayarlanmıştır; Production ortamında bu endpoint'ler eşlenmez.
+- **SOLID ve tek sorumluluk ilkesi (SRP):** `Demo/Demo.Solid` konsol projesinde SOLID ilkeleri listelenir. `SRP.cs`, ürün oluşturma, e-posta ve arayüz sorumluluklarını tek sınıfta toplama örneğini; ardından ürün deposu, e-posta servisi ve ekran sınıflarına ayıran bir örneği gösterir. Konsol giriş noktası şimdilik yalnızca `Hello, World!` yazdırır.
+
 ### 23 Kasım 2026
 
 - **Merkezi hata yönetimi:** `ExceptionHandlingMiddleware`, sonraki aşamalarda oluşan hataları loglar. Yanıt henüz başlamamışsa HTTP 500 ve `{"error":"Beklenmeyen bir hata oluştu"}` döndürür; başlamışsa hatayı yeniden fırlatır. `/hata` endpoint'i bu davranışı denemek için istisna üretir.
 - **Middleware sırası:** Pipeline'da önce hata yönetimi, ardından istek loglama ve süre ölçümü bulunur. Normal akışta istek logu ve kronometre endpoint'ten önce, süre ve yanıt logları ise endpoint'ten sonra çalışır.
-- **Controller tabanlı API:** `AddControllers` ve `MapControllers` ile controller'lar etkinleştirilir. `GET /api/products` şimdilik örnek bir mesaj, `GET /api/products/info` ise mağaza ayarlarını döndürür.
-- **Options ve yapılandırma:** `Shop` bölümü `ShopOptions` sınıfına bağlanır ve controller'a `IOptions<ShopOptions>` ile aktarılır. `StoreName`, `MaxOrderItems` ve `Currency` ayarları tanımlıdır; `Shop:Currency` değerine doğrudan yapılandırma üzerinden de erişilir.
+- **Controller tabanlı API:** `AddControllers` ve `MapControllers` ile controller'lar etkinleştirilir. O gün `GET /api/products` örnek bir mesaj, `GET /api/products/info` ise mağaza ayarlarını döndürüyordu; ürün endpoint'lerinin güncel davranışı için 24 Kasım notlarına bakın.
+- **Options ve yapılandırma:** `Shop` bölümü `ShopOptions` sınıfına bağlanır ve controller'a `IOptions<ShopOptions>` ile aktarılır. `StoreName`, `MaxOrderItems` ve `Currency` ayarları tanımlıdır; `Program.cs` içinde `Shop:Currency` değerine doğrudan yapılandırma üzerinden de erişilir.
 - **Ortamlar:** Temel yapılandırmada para birimi `USD`, Development ortamında `TL`, Production ortamında `EUR` olarak tanımlıdır. Ortama özgü ayarlar temel ayarları geçersiz kılar; diğer yapılandırma kaynakları da etkin değeri değiştirebilir. Projede User Secrets kimliği de tanımlanmıştır.
 - **Başlatma profilleri:** `http` profili Development ortamında `http://localhost:5050`, `http-pro` profili Production ortamında `http://localhost:6060` adresini kullanır. `https` profili Development ortamında `https://localhost:7255` ve `http://localhost:5031` adreslerini kullanır.
 - **Geliştirme konteyneri:** .NET 10 geliştirme konteyneri, VS Code uzantıları ve çözüm için `dotnet restore` adımı eklenmiştir. Konteyner yapılandırması 5000, 5031 ve 7255 portlarını yönlendirir; 5050 ve 6060 profilleri için gerekirse bu portları ayrıca yönlendirin.
@@ -40,6 +49,10 @@ Bugünkü örnekte pipeline sırası önce istek loglama, sonra süre ölçümü
 - `ECommerce.API/Options/`: Mağaza yapılandırmasını temsil eden `ShopOptions` sınıfı.
 - `ECommerce.API/appsettings*.json`: Temel ve ortama özgü yapılandırma.
 - `ECommerce.API/Properties/launchSettings.json`: Geliştirme ve üretim başlatma profilleri.
+- `ECommerce.Application/ProductService.cs`: Bellek içi ürün işlemleri.
+- `ECommerce.Domain/`: Ürün ve kategori modelleri.
+- `../Demo/Demo.Solid/`: SOLID ilkeleri ve tek sorumluluk örneğini içeren konsol projesi.
+- `ECommerce.slnx`: API, Application, Domain ve SOLID demo projelerini içeren çözüm.
 
 ## Günlük Güncelleme
 
