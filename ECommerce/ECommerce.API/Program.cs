@@ -2,6 +2,8 @@ using System.Diagnostics;
 using ECommerce.API.Middlewares;
 using ECommerce.API.Options;
 using ECommerce.Application;
+using ECommerce.Application.Notifications;
+using ECommerce.Application.Services;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +17,13 @@ builder.Services.AddOpenApi();
 builder.Services.Configure<ShopOptions>(builder.Configuration.GetSection(ShopOptions.SectionName));
 
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddSingleton<INotificationChannel, EmailChannel>();
+builder.Services.AddSingleton<INotificationChannel, SMSChannel>();
+builder.Services.AddSingleton<INotificationChannel, WhatsAppChannel>();
+
+
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<OrderService>(); 
 
 var app = builder.Build();
 
