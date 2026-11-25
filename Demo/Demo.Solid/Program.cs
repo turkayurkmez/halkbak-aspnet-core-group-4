@@ -17,3 +17,11 @@ Customer customer = new Customer { CartType = new Premium(), Name ="Türkay"};
 OrderProcessorAfter orderProcessorAfter = new OrderProcessorAfter { Customer = customer};
 
 System.Console.WriteLine(orderProcessorAfter.GetDiscountedPrice(1000));
+
+var rect = Geometry.CreateRect(5);
+
+
+System.Console.WriteLine(rect.GetArea());
+
+var rect2 = Geometry.CreateRect(3,5);
+System.Console.WriteLine(rect2.GetArea());
