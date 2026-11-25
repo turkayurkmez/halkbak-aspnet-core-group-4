@@ -4,6 +4,16 @@ Bu repo, ASP.NET Core Web API konularını uygulamalı olarak öğrenmek için k
 
 ## Günlük Ders Notları
 
+### 25 Kasım 2026
+
+- **Sipariş ve bildirim akışı:** `POST /api/orders`, `OrdersController` üzerinden `OrderService.CreateOrder` metodunu çağırır ve işlem tamamlandığında HTTP 200 döndürür. Servis, `NotificationService` aracılığıyla örnek müşteriye “Siparişiniz oluşturuldu” mesajını iletir.
+- **ECommerce'de SRP:** Sipariş işlemini `OrderService`, bildirimlerin dağıtımını `NotificationService`, kanala özgü gönderim davranışını ise `EmailChannel`, `SMSChannel` ve `WhatsAppChannel` üstlenir. Böylece sipariş akışı ile bildirim sorumlulukları ayrılır.
+- **ECommerce'de OCP:** Kanallar ortak `INotificationChannel` arayüzündeki `Name` ve `SendAsync` üyelerini uygular. `NotificationService`, bağımlılık enjeksiyonundan aldığı `IEnumerable<INotificationChannel>` içindeki kanalları sırayla çağırır. Yeni bir kanal eklemek için arayüzü uygulayan bir sınıf yazıp `Program.cs` içinde `INotificationChannel` olarak kaydetmek yeterlidir; bildirim servisini değiştirmek gerekmez. Mevcut kanallar singleton, `NotificationService` ve `OrderService` ise scoped olarak kayıtlıdır.
+- **Örneğin sınırları:** Sipariş veritabanına kaydedilmez; müşteri adresi ve mesajı örnek değerlerdir. Üç kanal gerçek e-posta, SMS veya WhatsApp mesajı göndermek yerine yalnızca bilgi seviyesinde log yazar. Aynı alıcı ve mesaj kayıtlı tüm kanallara iletilir.
+- **OCP demosu:** `Demo/Demo.Solid/OCP.cs`, indirimleri `switch` ile seçen eski yaklaşım yerine `CartType` soyut sınıfını ve `Standard`, `Silver`, `Gold`, `Premium` uygulamalarını kullanır. `OrderProcessorAfter`, indirim hesabını müşterinin kart tipine devreder; yeni bir kart tipi işlemci değiştirilmeden eklenebilir.
+- **LSP demosu:** `Demo/Demo.Solid/LSP.cs` içinde `Rectangle` ve `Square`, birbirinden türemek yerine ortak `IArea` arayüzünü uygular. `Geometry.CreateRect`, verilen ölçülere göre kare veya dikdörtgen döndürür; çağıran kod her ikisinin alanını aynı arayüz üzerinden hesaplar.
+- **Konsol çıktısı:** SOLID demosu artık `Hello, World!` yanında Premium kart için 1000 üzerinden indirimli fiyatı (800) ve örnek karenin ve dikdörtgenin alanlarını (25 ve 15) da yazdırır.
+
 ### 24 Kasım 2026
 
 - **Katmanlı yapı:** `ECommerce.Application` ve `ECommerce.Domain` projeleri eklendi. API, Application'a; Application da Domain'e referans verir. Domain'deki `Product` ürünün kimlik, ad, SKU, fiyat, stok ve kategori kimliği alanlarını; `Category` ise kimlik ve ad alanlarını içerir.
@@ -11,7 +21,7 @@ Bu repo, ASP.NET Core Web API konularını uygulamalı olarak öğrenmek için k
 - **Ürün endpoint'leri:** `GET /api/products` ürünleri listeler; `GET /api/products/{id}` kimliğe göre arar; `POST /api/products/add` istek gövdesindeki ürünü ekler ve `CreatedAtAction` ile ürünün adresini içeren yanıt döndürür. `GET /api/products/info` mağaza ayarlarını döndürmeye devam eder.
 - **Örneğin sınırları:** Ürün listesi veritabanına kaydedilmez. Servis her HTTP isteği için ayrı oluşturulduğundan eklenen ürünler sonraki isteklerde korunmaz. Yeni ürünün kimliği servis tarafından üretilmez; bulunamayan ürün için ayrıca `NotFound` yanıtı tanımlanmamıştır.
 - **OpenAPI ve Scalar:** Development ortamında OpenAPI ve Scalar etkinleştirilir. `http` profili tarayıcıyı `/scalar` adresinde açacak şekilde ayarlanmıştır; Production ortamında bu endpoint'ler eşlenmez.
-- **SOLID ve tek sorumluluk ilkesi (SRP):** `Demo/Demo.Solid` konsol projesinde SOLID ilkeleri listelenir. `SRP.cs`, ürün oluşturma, e-posta ve arayüz sorumluluklarını tek sınıfta toplama örneğini; ardından ürün deposu, e-posta servisi ve ekran sınıflarına ayıran bir örneği gösterir. Konsol giriş noktası şimdilik yalnızca `Hello, World!` yazdırır.
+- **SOLID ve tek sorumluluk ilkesi (SRP):** `Demo/Demo.Solid` konsol projesinde SOLID ilkeleri listelenir. `SRP.cs`, ürün oluşturma, e-posta ve arayüz sorumluluklarını tek sınıfta toplama örneğini; ardından ürün deposu, e-posta servisi ve ekran sınıflarına ayıran bir örneği gösterir. Konsolun güncel davranışı için 25 Kasım notlarına bakın.
 
 ### 23 Kasım 2026
 
@@ -45,13 +55,14 @@ Bugünkü örnekte pipeline sırası önce istek loglama, sonra süre ölçümü
 
 - `ECommerce.API/Program.cs`: Uygulama başlangıcı, servisler, middleware sırası ve minimal API endpoint'leri.
 - `ECommerce.API/Middlewares/`: Hata yönetimi, istek loglama ve süre ölçümü middleware sınıfları.
-- `ECommerce.API/Controllers/`: Ürün ve mağaza bilgisi endpoint'leri.
+- `ECommerce.API/Controllers/`: Ürün, mağaza bilgisi ve sipariş endpoint'leri.
 - `ECommerce.API/Options/`: Mağaza yapılandırmasını temsil eden `ShopOptions` sınıfı.
 - `ECommerce.API/appsettings*.json`: Temel ve ortama özgü yapılandırma.
 - `ECommerce.API/Properties/launchSettings.json`: Geliştirme ve üretim başlatma profilleri.
-- `ECommerce.Application/ProductService.cs`: Bellek içi ürün işlemleri.
+- `ECommerce.Application/Services/`: Bellek içi ürün işlemleri ve örnek sipariş servisi.
+- `ECommerce.Application/Notifications/`: Bildirim kanalı arayüzü, kanal uygulamaları ve bildirim servisi.
 - `ECommerce.Domain/`: Ürün ve kategori modelleri.
-- `../Demo/Demo.Solid/`: SOLID ilkeleri ve tek sorumluluk örneğini içeren konsol projesi.
+- `../Demo/Demo.Solid/`: SRP, OCP ve LSP örneklerini içeren konsol projesi.
 - `ECommerce.slnx`: API, Application, Domain ve SOLID demo projelerini içeren çözüm.
 
 ## Günlük Güncelleme
