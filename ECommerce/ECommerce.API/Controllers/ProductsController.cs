@@ -1,5 +1,6 @@
 using ECommerce.API.Options;
 using ECommerce.Application;
+using ECommerce.Application.Services;
 using ECommerce.Domain;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,8 +15,8 @@ namespace ECommerce.API.Controllers
 
         private readonly ShopOptions shopOptions;
 
-        private readonly ProductService productService;
-        public ProductsController(IOptions<ShopOptions> options, ProductService productService )
+        private readonly IProductService productService;
+        public ProductsController(IOptions<ShopOptions> options, IProductService productService )
         {
             shopOptions = options.Value;
             this.productService = productService;

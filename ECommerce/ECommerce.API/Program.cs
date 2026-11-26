@@ -16,14 +16,15 @@ builder.Services.AddOpenApi();
 
 builder.Services.Configure<ShopOptions>(builder.Configuration.GetSection(ShopOptions.SectionName));
 
-builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IOrderService, OrderService>(); 
 builder.Services.AddSingleton<INotificationChannel, EmailChannel>();
 builder.Services.AddSingleton<INotificationChannel, SMSChannel>();
 builder.Services.AddSingleton<INotificationChannel, WhatsAppChannel>();
 
 
 builder.Services.AddScoped<NotificationService>();
-builder.Services.AddScoped<OrderService>(); 
+
 
 var app = builder.Build();
 

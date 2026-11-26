@@ -3,7 +3,7 @@ using ECommerce.Application.Notifications;
 
 namespace ECommerce.Application.Services;
 
-public class OrderService(NotificationService notificationService)
+public class OrderService(NotificationService notificationService) : IOrderService
 {
    public async Task CreateOrder()
     {

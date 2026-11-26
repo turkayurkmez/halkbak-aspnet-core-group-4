@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="../Demo/Demo.LifeTime/Demo.LifeTime.csproj" />
   <Project Path="../Demo/Demo.Solid/Demo.Solid.csproj" />
   <Project Path="ECommerce.API/ECommerce.API.csproj" />
   <Project Path="ECommerce.Application/ECommerce.Application.csproj" />
