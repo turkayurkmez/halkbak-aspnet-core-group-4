@@ -4,6 +4,8 @@ using ECommerce.API.Options;
 using ECommerce.Application;
 using ECommerce.Application.Notifications;
 using ECommerce.Application.Services;
+using ECommerce.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +24,8 @@ builder.Services.AddSingleton<INotificationChannel, EmailChannel>();
 builder.Services.AddSingleton<INotificationChannel, SMSChannel>();
 builder.Services.AddSingleton<INotificationChannel, WhatsAppChannel>();
 
+var connectionString = builder.Configuration.GetConnectionString("Default");
+builder.Services.AddDbContext<AppDbContext>(options=>options.UseSqlite(connectionString));
 
 builder.Services.AddScoped<NotificationService>();
 
