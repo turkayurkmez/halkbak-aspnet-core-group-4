@@ -4,6 +4,31 @@ Bu repo, ASP.NET Core Web API konularını uygulamalı olarak öğrenmek için k
 
 ## Günlük Ders Notları
 
+### 27 Kasım 2026
+
+- **Infrastructure katmanı:** Çözüme `ECommerce.Infrastructure` sınıf kütüphanesi eklendi. Proje `ECommerce.Domain`'e referans verir ve veri erişimi için `Microsoft.EntityFrameworkCore.Sqlite` paketini kullanır. Hedef framework .NET 10'dur.
+- **EF Core araçları:** `ECommerce.Infrastructure/dotnet-tools.json` ile `dotnet-ef` (10.0.15) yerel araç olarak tanımlanır; `ECommerce.API` projesine de migration komutları için `Microsoft.EntityFrameworkCore.Design` paketi eklendi.
+- **Örneğin sınırları:** Katman henüz iskelet halindedir: yalnızca boş bir `Class1` içerir. `DbContext`, repository uygulaması, migration ve bağlantı dizesi yoktur; Infrastructure, Application ve API'ye bağlanmamıştır, `Program.cs` içinde de kayıt yapılmamıştır. `IRepository<T>` ve `IProductRepository` sözleşmeleri hâlâ Application katmanında bekler.
+
+### 26 Kasım 2026
+
+- **Repository sözleşmeleri:** `ECommerce.Application/Contracts` altına genel `IRepository<T>` (`GetByIdAsync`, `ListAsync`, `AddAsync`, `Update`, `Remove`, `IsExistsAsync`) ve ürüne özgü `IProductRepository` (`GetByCategoryAsync`, `SearchByName`) arayüzleri eklendi. Henüz uygulaması yoktur; Infrastructure katmanında uygulanması planlanır.
+- **Bağımlılık enjeksiyonu ömürleri (lifetime):** `Demo/Demo.LifeTime`, ASP.NET Core MVC şablonu üzerine kurulu bir demodur. `Services/LifeTimeService.cs` içinde `Guid` değerini tutan ortak `IGuidGenerator` arayüzünden türeyen `ISingleton`, `IScoped` ve `ITransient` arayüzleri ile bunların `Singleton`, `Scoped` ve `Transient` uygulamaları bulunur. Her uygulama, oluşturulurken (constructor) yeni bir `Guid` üretir; böylece aynı nesnenin mi yoksa yeni bir nesnenin mi kullanıldığı `Guid` değerinden anlaşılır.
+- **Kayıtlar:** `Program.cs` içinde `ISingleton` → `AddSingleton`, `IScoped` → `AddScoped`, `ITransient` → `AddTransient` ile kaydedilir. `LifeTimeService` de transient olarak kaydedilir ve constructor'ında üç servisi alıp `Singleton`, `Scoped`, `Transient` özelliklerinde tutar.
+- **Gözlem:** `HomeController`, üç servisi doğrudan, `LifeTimeService` üzerinden de bir kez daha alır. `Index` action'ı bu altı `Guid` değerini `ViewBag` ile `Views/Home/Index.cshtml` sayfasına aktarır; sayfa önce doğrudan enjekte edilen, ardından `LifeTimeService` içindeki değerleri listeler.
+- **Beklenen sonuç:** Singleton değeri uygulama çalıştığı sürece tüm isteklerde ve iki satırda aynıdır. Scoped değeri aynı istekte iki satırda aynıdır, her yeni istekte (sayfa yenilemede) değişir. Transient değeri ise aynı istek içinde bile iki satırda farklıdır; çünkü her bağımlılık çözümlemesinde yeni nesne oluşturulur.
+- **Arayüz tabanlı kayıt (ECommerce):** `ECommerce.Application/Services` altına `IOrderService` ve `IProductService` arayüzleri eklendi. `OrderService` ve `ProductService` bu arayüzleri uygular; `Program.cs` içinde `AddScoped<IProductService, ProductService>` ve `AddScoped<IOrderService, OrderService>` olarak kaydedilir. `OrdersController` ve `ProductsController` artık somut sınıflar yerine arayüzlere bağımlıdır. `ProductService`'in namespace'i `ECommerce.Application` yerine `ECommerce.Application.Services` oldu; endpoint davranışları değişmedi.
+- **Çözüm dosyası:** `Demo.LifeTime` projesi `ECommerce.slnx` çözümüne eklendi.
+- **Örneğin sınırları:** Demo yalnızca ömür farklarını gösterir; Singleton, Scoped ve Transient sınıfları iş mantığı içermez. `ViewBag` kullanımı örneği kısa tutmak içindir.
+
+`ECommerce` dizininden örnek çalıştırma:
+
+```bash
+dotnet run --project ../Demo/Demo.LifeTime
+```
+
+Açılan sayfada tarayıcıyı birkaç kez yenileyip hangi `Guid` değerlerinin değiştiğini karşılaştırın.
+
 ### 25 Kasım 2026
 
 - **Sipariş ve bildirim akışı:** `POST /api/orders`, `OrdersController` üzerinden `OrderService.CreateOrder` metodunu çağırır ve işlem tamamlandığında HTTP 200 döndürür. Servis, `NotificationService` aracılığıyla örnek müşteriye “Siparişiniz oluşturuldu” mesajını iletir.
@@ -59,11 +84,14 @@ Bugünkü örnekte pipeline sırası önce istek loglama, sonra süre ölçümü
 - `ECommerce.API/Options/`: Mağaza yapılandırmasını temsil eden `ShopOptions` sınıfı.
 - `ECommerce.API/appsettings*.json`: Temel ve ortama özgü yapılandırma.
 - `ECommerce.API/Properties/launchSettings.json`: Geliştirme ve üretim başlatma profilleri.
-- `ECommerce.Application/Services/`: Bellek içi ürün işlemleri ve örnek sipariş servisi.
+- `ECommerce.Application/Services/`: `IProductService`/`IOrderService` arayüzleri; bellek içi ürün işlemleri ve örnek sipariş servisi.
 - `ECommerce.Application/Notifications/`: Bildirim kanalı arayüzü, kanal uygulamaları ve bildirim servisi.
+- `ECommerce.Application/Contracts/`: Repository arayüzleri (`IRepository<T>`, `IProductRepository`).
 - `ECommerce.Domain/`: Ürün ve kategori modelleri.
+- `ECommerce.Infrastructure/`: EF Core (SQLite) için hazırlanan veri erişim katmanı iskeleti ve `dotnet-ef` araç tanımı.
 - `../Demo/Demo.Solid/`: SRP, OCP ve LSP örneklerini içeren konsol projesi.
-- `ECommerce.slnx`: API, Application, Domain ve SOLID demo projelerini içeren çözüm.
+- `../Demo/Demo.LifeTime/`: Singleton, Scoped ve Transient ömürlerini gösteren ASP.NET Core MVC projesi.
+- `ECommerce.slnx`: API, Application, Domain, Infrastructure, SOLID ve LifeTime demo projelerini içeren çözüm.
 
 ## Günlük Güncelleme
 
