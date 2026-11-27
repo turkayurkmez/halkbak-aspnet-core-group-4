@@ -6,9 +6,22 @@ Bu repo, ASP.NET Core Web API konularını uygulamalı olarak öğrenmek için k
 
 ### 27 Kasım 2026
 
-- **Infrastructure katmanı:** Çözüme `ECommerce.Infrastructure` sınıf kütüphanesi eklendi. Proje `ECommerce.Domain`'e referans verir ve veri erişimi için `Microsoft.EntityFrameworkCore.Sqlite` paketini kullanır. Hedef framework .NET 10'dur.
-- **EF Core araçları:** `ECommerce.Infrastructure/dotnet-tools.json` ile `dotnet-ef` (10.0.15) yerel araç olarak tanımlanır; `ECommerce.API` projesine de migration komutları için `Microsoft.EntityFrameworkCore.Design` paketi eklendi.
-- **Örneğin sınırları:** Katman henüz iskelet halindedir: yalnızca boş bir `Class1` içerir. `DbContext`, repository uygulaması, migration ve bağlantı dizesi yoktur; Infrastructure, Application ve API'ye bağlanmamıştır, `Program.cs` içinde de kayıt yapılmamıştır. `IRepository<T>` ve `IProductRepository` sözleşmeleri hâlâ Application katmanında bekler.
+- **Infrastructure katmanı:** Çözüme `ECommerce.Infrastructure` sınıf kütüphanesi eklendi; veri erişimi için `Microsoft.EntityFrameworkCore.Sqlite` paketini kullanır. Proje başta `ECommerce.Domain`'e referans veriyordu, sonra `ECommerce.Application`'a referans verecek şekilde değiştirildi (Domain'e dolaylı erişir). `ECommerce.API` artık doğrudan `ECommerce.Infrastructure`'a referans verir; Application ve Domain'e bu zincir üzerinden ulaşır.
+- **EF Core araçları:** `ECommerce.Infrastructure/dotnet-tools.json` ile `dotnet-ef` (10.0.15) yerel araç olarak tanımlanır; `ECommerce.API` projesine de `Microsoft.EntityFrameworkCore.Design` paketi eklendi. Bu paket startup projesinde (API) bulunmalıdır.
+- **Domain modelleri:** `Customer` (ad, e-posta, siparişler), `Order` (müşteri, oluşturulma tarihi, kalemler, `CalculateTotal()` ile toplam tutar) ve `OrderItem` (ürün, adet, birim fiyat) eklendi; `Category` ürün koleksiyonu kazandı, `Product`'a doğrulama öznitelikleri (`Required`, `MinLength(2)`, `MaxLength(200)`) eklendi.
+- **AppDbContext:** `Data/AppDbContext.cs` içinde `Products`, `Categories`, `Orders`, `Customers` ve `OrderItems` `DbSet`'leri bulunur. `OnModelCreating` ile `Product.Name` zorunlu ve en çok 200 karakter, `Sku` zorunlu, en çok 50 karakter ve tekil (unique index), `Price` `decimal(18,2)` olur. `Product`→`Category` ve `OrderItem`→`Product` ilişkilerinde silme davranışı `Restrict`, `Order`→`Items` ilişkisinde `Cascade`'dir.
+- **Bağlantı ve kayıt:** `appsettings.json` içine `ConnectionStrings:Default` (`Data Source=ecommerce.db`) eklendi; `Program.cs` içinde `AddDbContext<AppDbContext>` ile SQLite kullanılacak şekilde kaydedilir.
+- **Migration:** `Data/Migrations` altında `InitialCreate` migration'ı ve model snapshot'ı oluşturuldu (Categories, Customers, Products, Orders, OrderItems tabloları). Oluşan `ecommerce.db` dosyası da repoya eklenmiştir.
+- **Örneğin sınırları:** Servisler hâlâ bellek içi listeleri kullanır; `IRepository<T>`/`IProductRepository` uygulamaları yoktur ve `Class1` hâlâ durur. `DbContext` yalnızca kayıtlıdır, controller/servisler tarafından kullanılmaz.
+
+Migration komutları (`ECommerce.Infrastructure` dizininden; önce `dotnet tool restore`):
+
+```bash
+dotnet ef migrations add InitialCreate -s ../ECommerce.API/ECommerce.API.csproj -o Data/Migrations
+dotnet ef database update -s ../ECommerce.API/ECommerce.API.csproj
+```
+
+`-s` değeri `.csproj` dosyasını göstermelidir; yanlış yol "Unable to retrieve project metadata" uyarısına yol açabilir.
 
 ### 26 Kasım 2026
 
@@ -87,8 +100,8 @@ Bugünkü örnekte pipeline sırası önce istek loglama, sonra süre ölçümü
 - `ECommerce.Application/Services/`: `IProductService`/`IOrderService` arayüzleri; bellek içi ürün işlemleri ve örnek sipariş servisi.
 - `ECommerce.Application/Notifications/`: Bildirim kanalı arayüzü, kanal uygulamaları ve bildirim servisi.
 - `ECommerce.Application/Contracts/`: Repository arayüzleri (`IRepository<T>`, `IProductRepository`).
-- `ECommerce.Domain/`: Ürün ve kategori modelleri.
-- `ECommerce.Infrastructure/`: EF Core (SQLite) için hazırlanan veri erişim katmanı iskeleti ve `dotnet-ef` araç tanımı.
+- `ECommerce.Domain/`: Ürün, kategori, müşteri, sipariş ve sipariş kalemi modelleri.
+- `ECommerce.Infrastructure/`: EF Core (SQLite) `AppDbContext`'i, `Data/Migrations` ve `dotnet-ef` araç tanımı.
 - `../Demo/Demo.Solid/`: SRP, OCP ve LSP örneklerini içeren konsol projesi.
 - `../Demo/Demo.LifeTime/`: Singleton, Scoped ve Transient ömürlerini gösteren ASP.NET Core MVC projesi.
 - `ECommerce.slnx`: API, Application, Domain, Infrastructure, SOLID ve LifeTime demo projelerini içeren çözüm.
